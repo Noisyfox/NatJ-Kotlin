@@ -1,0 +1,3 @@
+rootProject.name = 'natj-kotlin'
+
+include 'lib'

@@ -1,0 +1,32 @@
+apply plugin: 'maven-publish'
+apply plugin: 'kotlin'
+apply plugin: 'moe-sdk'
+
+// Set source and target to Java 7
+targetCompatibility = '1.7'
+sourceCompatibility = '1.7'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.6"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = rootProject.name
+            from components.java
+            artifact kotlinSourcesJar
+        }
+    }
+}
