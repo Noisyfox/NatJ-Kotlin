@@ -69,8 +69,8 @@ fun <K : Any, V : Any> Map<K, V>.toNSDictionary(): NSDictionary<Any, Any> {
     return dict
 }
 
-/** Convert a Java [List] to [NSDictionary]. */
-fun <T : Any> List<T>.toNSArray(): NSArray<Any> = when {
+/** Convert a Java [Collection] to [NSDictionary]. */
+fun <T : Any> Collection<T>.toNSArray(): NSArray<Any> = when {
     isEmpty() -> NSArray.array<NSObject>()
     size == 1 -> NSArray.arrayWithObject(single().toNSObject())
     else -> {
