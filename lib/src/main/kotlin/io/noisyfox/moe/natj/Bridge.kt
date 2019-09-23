@@ -1,6 +1,9 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package io.noisyfox.moe.natj
 
 import apple.foundation.c.Foundation
+import org.moe.natj.c.CRuntime
 import org.moe.natj.c.OpaquePtr
 import org.moe.natj.objc.ObjCObject
 import org.moe.natj.objc.ObjCRuntime
@@ -20,7 +23,7 @@ inline fun <reified T : ObjCObject> OpaquePtr.bridge(): T = ObjCRuntime.cast(thi
  * also transfers ownership to you.
  * You are responsible for calling CFRelease or a related function to relinquish ownership of the object.
  */
-inline fun <reified T : OpaquePtr> ObjCObject.bridgeRetained(): T = Foundation.CFBridgingRetain(this) as T
+inline fun <reified T : OpaquePtr> ObjCObject.bridgeRetained(): T = CRuntime.cast(Foundation.CFBridgingRetain(this), T::class.java)
 
 /**
  * __bridge_transfer or CFBridgingRelease moves a non-Objective-C pointer to Objective-C and also transfers

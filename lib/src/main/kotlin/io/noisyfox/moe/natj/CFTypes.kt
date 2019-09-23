@@ -4,7 +4,8 @@ import apple.corefoundation.c.CoreFoundation
 import apple.corefoundation.opaque.CFStringRef
 import apple.foundation.NSString
 import org.moe.natj.c.OpaquePtr
-import org.moe.natj.objc.ObjCAutoreleasePool
+import org.moe.natj.objc.ObjCRuntime
+import java.util.concurrent.atomic.AtomicLong
 
 /** Release the given Core Foundation object after [action] returns. */
 inline fun <T : OpaquePtr, R> T.use(action: (T) -> R): R = try {
@@ -17,10 +18,42 @@ inline fun <T : OpaquePtr, R> T.use(action: (T) -> R): R = try {
 fun <T : OpaquePtr> T.retain(): T = apply { CoreFoundation.CFRetain(this) }
 
 /** Release the given Core Foundation object at the end of a autorelease block. */
-fun <T : OpaquePtr> T.autorelease(): T = apply { CoreFoundation.CFAutorelease(this) }
+fun <T : OpaquePtr> T.autorelease(): T = apply { ObjCRuntime.autoreleaseObject(peer.peer) }
 
 /** Release the given Core Foundation object. */
 fun OpaquePtr.release() = CoreFoundation.CFRelease(this)
+
+/**
+ * A utility class for using NSAutoreleasePools.
+ *
+ * The difference to [org.moe.natj.objc.ObjCAutoreleasePool] is this one doesn't raise any
+ * exception in [close] so it can be used in Java without the need of any catch clause:
+ *
+ * try (ObjCAutoreleasePool pool = new ObjCAutoreleasePool()) {
+ *    // Use any auto release you want
+ * }
+ */
+class ObjCAutoreleasePool : AutoCloseable {
+    /**
+     * Peer of the autorelease pool.
+     */
+    private val peer: AtomicLong = AtomicLong(ObjCRuntime.createAutoreleasePool())
+
+    /**
+     * Releases all objects int this pool.
+     */
+    fun release() {
+        val peer = this.peer.getAndSet(0)
+        if (peer == 0L) {
+            throw RuntimeException("pool was already released")
+        }
+        ObjCRuntime.releaseAutoreleasePool(peer)
+    }
+
+    override fun close() {
+        release()
+    }
+}
 
 /**
  * Run the [action] inside an AutoreleasePool.
