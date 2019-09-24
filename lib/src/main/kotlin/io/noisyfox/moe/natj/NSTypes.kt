@@ -54,7 +54,7 @@ private fun Any.toNSObject(): NSObject = when (this) {
     is Long -> NSNumber.numberWithLongLong(this)
     is Float -> NSNumber.numberWithFloat(this)
     is Double -> NSNumber.numberWithDouble(this)
-    is String -> NSString.stringWithString(this)
+    is String -> this.toNSString()
     else -> throw IllegalArgumentException("Unsupported object type: ${this.javaClass}")
 }
 
@@ -85,6 +85,9 @@ fun <T : Any> Collection<T>.toNSArray(): NSArray<Any> = when {
 /** Convert a Java [String] to [NSData] using given [encoding]. */
 fun String.toNSData(encoding: Long = NSUTF8StringEncoding): NSData = NSString.stringWithString(this)
     .dataUsingEncoding(encoding)
+
+/** Convert a Java [String] to [NSString]. */
+fun String.toNSString(): NSString = NSString.stringWithString(this)
 
 /** Convert a Java [ByteArray] to [NSData]. */
 fun ByteArray.toNSData(): NSData = NSData.dataWithBytesLength(PtrFactory.newByteArray(this), size.toLong())

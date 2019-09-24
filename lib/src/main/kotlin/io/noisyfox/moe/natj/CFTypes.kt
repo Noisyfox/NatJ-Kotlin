@@ -3,7 +3,9 @@ package io.noisyfox.moe.natj
 import apple.corefoundation.c.CoreFoundation
 import apple.corefoundation.opaque.CFStringRef
 import apple.foundation.NSString
+import org.moe.natj.c.CRuntime
 import org.moe.natj.c.OpaquePtr
+import org.moe.natj.general.ptr.ConstVoidPtr
 import org.moe.natj.objc.ObjCRuntime
 import java.util.concurrent.atomic.AtomicLong
 
@@ -22,6 +24,9 @@ fun <T : OpaquePtr> T.autorelease(): T = apply { ObjCRuntime.autoreleaseObject(p
 
 /** Release the given Core Foundation object. */
 fun OpaquePtr.release() = CoreFoundation.CFRelease(this)
+
+/** Cast given void ptr to a more specific [OpaquePtr]. */
+inline fun <reified T : OpaquePtr> ConstVoidPtr.cast(): T = CRuntime.cast(this, T::class.java)
 
 /**
  * A utility class for using NSAutoreleasePools.
