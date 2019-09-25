@@ -55,6 +55,7 @@ private fun Any.toNSObject(): NSObject = when (this) {
     is Float -> NSNumber.numberWithFloat(this)
     is Double -> NSNumber.numberWithDouble(this)
     is String -> this.toNSString()
+    is Map<*, *> -> (this as Map<Any, Any>).toNSDictionary()
     else -> throw IllegalArgumentException("Unsupported object type: ${this.javaClass}")
 }
 
