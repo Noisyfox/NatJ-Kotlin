@@ -83,7 +83,7 @@ fun NSData.toArray(offset: Int = 0, length: Int = this.length().toInt()): ByteAr
     }
 
     val bytes = ByteArray(length)
-    ptr.copyFrom(bytes)
+    ptr.copyTo(bytes)
 
     return bytes
 }
