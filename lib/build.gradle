@@ -1,32 +1,88 @@
-apply plugin: 'maven-publish'
-apply plugin: 'kotlin'
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id "org.jetbrains.dokka"
+    id "maven-publish"
+    id "signing"
+}
 apply plugin: 'moe-sdk'
 
-// Set source and target to Java 7
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
+// Set source and target to Java 8
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.6"
+    kotlinOptions.jvmTarget = "1.8"
 }
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.6"
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = rootProject.name
             from components.java
             artifact kotlinSourcesJar
+            artifact javadocJar
+
+            artifactId = 'natj-kotlin'
+
+            pom {
+                description = 'NatJ Kotlin extensions'
+
+                scm {
+                    url = 'https://github.com/Noisyfox/NatJ-Kotlin'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'Noisyfox'
+                        name = 'Noisyfox'
+                        organization = 'Noisyfox'
+                        organizationUrl = 'https://www.noisyfox.io/'
+                    }
+                }
+            }
         }
+    }
+
+    repositories {
+        maven {
+            name = 'MavenCentral'
+            def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            credentials {
+                if (project.hasProperty('ossrhUsername')) {
+                    username = ossrhUsername
+                }
+                if (project.hasProperty('ossrhPassword')) {
+                    password = ossrhPassword
+                }
+            }
+        }
+    }
+}
+
+if (project.hasProperty("signing.keyId")) {
+    signing {
+        sign publishing.publications.mavenJava
     }
 }
