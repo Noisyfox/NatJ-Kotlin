@@ -71,7 +71,7 @@ fun String.toNSString(): NSString = NSString.stringWithString(this)
 fun ByteArray.toNSData(): NSData = NSData.dataWithBytesLength(PtrFactory.newByteArray(this), size.toLong())
 
 /** Convert a [NSData] to Java [ByteArray]. */
-fun NSData.toArray(offset: Int = 0, length: Int = this.length().toInt()): ByteArray {
+fun NSData.getBytes(offset: Int = 0, length: Int = this.length().toInt()): ByteArray {
     require(offset >= 0)
     require(length >= 0)
 
