@@ -13,35 +13,6 @@ import apple.foundation.enums.Enums.NSUTF8StringEncoding
 import apple.foundation.struct.NSRange
 import org.moe.natj.c.OpaquePtr
 import org.moe.natj.general.ptr.impl.PtrFactory
-import org.moe.natj.objc.ObjCObject
-
-/**
- * This is equivalent to:
- *
- * val v = this.bridgeRetained()
- * try {
- *     return action(v)
- * } finally {
- *     v.release()
- * }
- *
- * Since this function keeps a reference of [this] so the Cocoa object won't be GC'd until
- * the [action] complete, hens we don't need to do an extra retain-then-release.
- *
- * However if the bridged [T] instance escaped the scope of [action] (for example returned as the result),
- * you need to retain it yourself before [action] returns:
- *
- * val bridged = someNSObject.bridgeUse<CFType>{ cfObj ->
- *     doSomething(cfObj)
- *     ...
- *     cfObj.retain() // cfObj escapes the code block
- * }
- *
- * doSomething(bridged)
- * ...
- * bridged.release() // Don't forget to release!
- */
-inline fun <reified T : OpaquePtr, R> ObjCObject.bridgeUse(action: (T) -> R): R = action(this.bridge())
 
 /** Convert the given object to a [NSObject]. */
 private fun Any.toNSObject(): NSObject = when (this) {

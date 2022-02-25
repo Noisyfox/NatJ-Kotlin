@@ -12,6 +12,10 @@ import org.moe.natj.objc.ObjCRuntime
 fun <T : OpaquePtr> bridge(obj: ObjCObject, type: Class<T>): T = ObjCRuntime.cast(obj, type)
 
 /** __bridge transfers a pointer between Objective-C and Core Foundation with no transfer of ownership. */
+@Deprecated(
+    message = "Pron to use-after-free error, use bridgeUse() when possible",
+    replaceWith = ReplaceWith("this.bridgeUse()", "io.noisyfox.moe.natj.bridgeUse"),
+)
 inline fun <reified T : OpaquePtr> ObjCObject.bridge(): T = bridge(this, T::class.java)
 
 /**
@@ -55,3 +59,28 @@ fun <T : ObjCObject> bridgeTransfer(ptr: OpaquePtr, type: Class<T>): T = ObjCRun
  * ARC is responsible for relinquishing ownership of the object.
  */
 inline fun <reified T : ObjCObject> OpaquePtr.bridgeTransfer(): T = bridgeTransfer(this, T::class.java)
+
+/**
+ * This is equivalent to:
+ *
+ * val v = this.bridgeRetained()
+ * try {
+ *     return action(v)
+ * } finally {
+ *     v.release()
+ * }
+ *
+ * If the bridged [T] instance escaped the scope of [action] (for example returned as the result),
+ * you need to retain it yourself before [action] returns:
+ *
+ * val bridged = someNSObject.bridgeUse<CFType>{ cfObj ->
+ *     doSomething(cfObj)
+ *     ...
+ *     cfObj.retain() // cfObj escapes the code block
+ * }
+ *
+ * doSomething(bridged)
+ * ...
+ * bridged.release() // Don't forget to release!
+ */
+inline fun <reified T : OpaquePtr, R> ObjCObject.bridgeUse(action: (T) -> R): R = this.bridgeRetained<T>().use(action)
