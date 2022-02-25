@@ -32,7 +32,7 @@ private fun Any.toNSObject(): NSObject = when (this) {
 }
 
 /** Convert a Java [Map] to [NSDictionary]. */
-fun <K : Any, V : Any> Map<K, V>.toNSDictionary(): NSDictionary<Any, Any> {
+fun <K : Any> Map<K, Any>.toNSDictionary(): NSDictionary<Any, Any> {
     val dict = NSMutableDictionary.alloc().initWithCapacity(this.size.toLong()) as NSDictionary<Any, Any>
     this.forEach { (k, v) ->
         // Key and value of a NSDictionary must all be [NSObject]s
