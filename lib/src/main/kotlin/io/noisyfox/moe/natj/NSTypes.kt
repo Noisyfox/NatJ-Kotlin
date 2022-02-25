@@ -6,6 +6,7 @@ import apple.NSObject
 import apple.foundation.NSArray
 import apple.foundation.NSData
 import apple.foundation.NSDictionary
+import apple.foundation.NSMutableArray
 import apple.foundation.NSMutableDictionary
 import apple.foundation.NSNumber
 import apple.foundation.NSString
@@ -41,10 +42,15 @@ fun <K : Any, V : Any> Map<K, V>.toNSDictionary(): NSDictionary<Any, Any> {
     return dict
 }
 
-/** Convert a Java [Collection] to [NSDictionary]. */
-fun <T : Any> Collection<T>.toNSArray(): NSArray<Any> = when {
+/** Convert a Java [Collection] to [NSArray]. */
+fun <T : NSObject> Collection<Any>.toNSArray(): NSArray<T> = when {
     isEmpty() -> NSArray.array<NSObject>()
     size == 1 -> NSArray.arrayWithObject(single().toNSObject())
+    size > 100 -> {
+        // Varargs can not take too many objects with native method
+        val array = NSMutableArray.arrayWithCapacity<NSObject>(size.toLong()) as NSMutableArray<NSObject>
+        this.mapTo(array) { it.toNSObject() }
+    }
     else -> {
         val objects = this.map { it.toNSObject() }.toTypedArray()
         val remains = arrayOfNulls<NSObject>(objects.size) // this will add a null at the end
@@ -52,7 +58,7 @@ fun <T : Any> Collection<T>.toNSArray(): NSArray<Any> = when {
 
         NSArray.arrayWithObjects(objects[0], *remains)
     }
-} as NSArray<Any>
+} as NSArray<T>
 
 /** Convert a Java [String] to [NSData] using given [encoding]. */
 fun String.toNSData(encoding: Long = NSUTF8StringEncoding): NSData = NSString.stringWithString(this)
